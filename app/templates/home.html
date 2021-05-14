@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>Bias Detector</title>
+
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css">         
+
+
+        <script src="https://cdn.anychart.com/releases/v8/js/anychart-base.min.js"></script>
+        <script src="https://cdn.anychart.com/releases/v8/js/anychart-tag-cloud.min.js"></script>
+        <script src="https://cdn.anychart.com/releases/8.9.0/js/anychart-data-adapter.min.js"></script>
+
+        <script src="https://unpkg.com/chart.js@2.8.0/dist/Chart.bundle.js"></script>
+        <script src="https://unpkg.com/chartjs-gauge@0.3.0/dist/chartjs-gauge.js"></script>
+        <script src="https://unpkg.com/chartjs-plugin-datalabels@0.7.0/dist/chartjs-plugin-datalabels.js"></script>
+        
+        <script type="text/javascript">
+            function convert(vars) {
+                    return vars
+                };
+
+            var data = convert( {{wc|tojson}} );
+            var bias = convert( {{ bias|tojson }} );
+        </script>
+    
+        <style>
+            html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            .bar {
+                width: 100%;
+                background-color: #ddd;
+            }
+            canvas {
+                -moz-user-select: none;
+                -webkit-user-select: none;
+                -ms-user-select: none;
+            }
+
+        </style>
+    </head>
+
+    <body>
+        <div class="container border">
+            <h1 class="m-5 p-2">Argentina Bias Detector</h1>
+            <div class="row m-5 p-2 border">
+                <div class="col-6">
+                    <form method="POST">
+                        <h3>Article URL</h3>
+                        <input name="text">
+                        <input type="submit" value="Detect">
+                    </form>
+                    <small>Compatible News Portals so far:<br>La Nación, El Cronista, Página 12, Derecha Diario</small>
+                </div>
+                <div class="col-6">
+                    <h4>News Portal</h4>
+                    {% if wc %}
+                    <h3>{{ portal}}</h3>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row m-5 p-2 border">
+                {% if wc %}
+                <div class="col-7 border" id="wc"></div>
+                <div class="col-5 border text-center">
+                    <h4>Leaning</h4>
+                    <h3>{{ label }}</h3>
+                    <div id="canvas-holder" style="width:100%">
+                        <canvas id="chart"></canvas>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12 border">Por favor enviar artículo</div>
+                {% endif %}
+            </div>
+            <footer class="row border-top">
+                <div class="row text-center">
+                    <div class="col-lg-4 text-left">Copyright © Bias Detector - 2021</div>
+                    <div class="col-lg-4 text-center">
+                        <a href=""><i class="bi bi-facebook"></i></a>
+                        <a href=""><i class="bi bi-twitter"></i></a>
+                    </div>
+                    <div class="col-lg-4 text-right">
+                        <a href="">About</a>
+                        <a href="https://github.com/guidomitolo">Design</a>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    
+        <script>
+            anychart.onDocumentReady(function() {
+                var chart = anychart.tagCloud(data);
+                chart.angles([0])
+
+                chart.colorRange(true);
+
+                chart.colorRange().length('80%');
+                chart.container("wc");
+                chart.draw();
+                }
+            );
+            
+            var input = [40, 60, 100]
+            var value = bias;
+            var config = {
+                type: 'gauge',
+                data: {
+                    labels: ['Left', 'Center', 'Right'],
+                    datasets: [{
+                        data: input,
+                        value: value,
+                        backgroundColor: ['red', 'grey', 'blue'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: 'Bias'
+                    },
+                    layout: {
+                        padding: {
+                            bottom: 30
+                        }
+                    },
+                    needle: {
+                        radiusPercentage: 2,
+                        widthPercentage: 3.2,
+                        lengthPercentage: 80,
+                        color: 'rgba(0, 0, 0, 1)'
+                    },
+                    plugins: {
+                        datalabels: {
+                            display: true,
+                            formatter:  function (value, context) {
+                                return context.chart.data.labels[context.dataIndex];
+                            },
+                            color: 'rgba(0, 0, 0, 1.0)',
+                            backgroundColor: null,
+                            font: {
+                                size: 15,
+                                weight: 'normal'
+                            }
+                        }
+                    }
+                }
+            };
+
+            window.onload = function() {
+                var ctx = document.getElementById('chart').getContext('2d');
+                window.myGauge = new Chart(ctx, config);
+            };
+
+        </script>
+    </body>
+</html>
