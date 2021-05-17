@@ -34,6 +34,7 @@
                 height: 100%;
                 margin: 0;
                 padding: 0;
+                background-color: #eaeaea;
             }
             .bar {
                 width: 100%;
@@ -49,28 +50,40 @@
     </head>
 
     <body>
-        <div class="container border">
-            <h1 class="m-5 p-2">Argentina Bias Detector</h1>
-            <div class="row m-5 p-2 border">
-                <div class="col-6">
+
+        <div class="container">
+
+            <h1 class="m-3">Argentina Bias Detector</h1>
+
+            <div class="row m-2">
+                <div class="col m-2 p-3 bg-white shadow-sm border">
                     <form method="POST">
                         <h3>Article URL</h3>
                         <input name="text">
-                        <input type="submit" value="Detect">
+                        <input class="mt-1" type="submit" value="Detect">
                     </form>
                     <small>Compatible News Portals so far:<br>La Nación, El Cronista, Página 12, Derecha Diario</small>
                 </div>
-                <div class="col-6">
-                    <h4>News Portal</h4>
+                <div class="col m-2 p-3 bg-white shadow-sm border">
+                    <h5>News Portal</h5>
                     {% if wc %}
-                    <h3>{{ portal}}</h3>
+                    <h4>{{ portal}}</h4>
+                    <p>{{ cantidad }} palabras</p>
+                    {% for item in lexicon.items() %}
+                    <p>{{ item[0] }} {{ item[1] }}</p>
+                    {% endfor %}
                     {% endif %}
                 </div>
             </div>
-            <div class="row m-5 p-2 border">
+            {% if mensaje %}
+            <div class="row alert alert-warning" role="alert">
+            {{ mensaje }}    
+            </div>
+            {% else %}
+            <div class="row m-3 p-3 bg-white shadow-sm border">
                 {% if wc %}
-                <div class="col-7 border" id="wc"></div>
-                <div class="col-5 border text-center">
+                <div class="col-lg-7 col-sm-12" id="wc"></div>
+                <div class="col-lg-5 col-sm-12 text-center">
                     <h4>Leaning</h4>
                     <h3>{{ label }}</h3>
                     <div id="canvas-holder" style="width:100%">
@@ -81,20 +94,26 @@
                 <div class="col-12 border">Por favor enviar artículo</div>
                 {% endif %}
             </div>
-            <footer class="row border-top">
-                <div class="row text-center">
-                    <div class="col-lg-4 text-left">Copyright © Bias Detector - 2021</div>
-                    <div class="col-lg-4 text-center">
-                        <a href=""><i class="bi bi-facebook"></i></a>
-                        <a href=""><i class="bi bi-twitter"></i></a>
-                    </div>
-                    <div class="col-lg-4 text-right">
-                        <a href="">About</a>
-                        <a href="https://github.com/guidomitolo">Design</a>
+            {% endif %}
+
+            <footer class="footer m-4 border-top">
+                <div class="container mt-4">
+                    <div class="row text-center">
+                        <div class="col-lg-4 mt-1 text-left">Copyright © Bias Detector - 2021</div>
+                        <div class="col-lg-4 mt-1 text-center">
+                            <a class="m-1" href=""><i class="bi bi-facebook"></i></a>
+                            <a class="m-1" href=""><i class="bi bi-twitter"></i></a>
+                        </div>
+                        <div class="col-lg-4 mt-1 text-right">
+                            <a href="https://github.com/guidomitolo">About</a>
+                        </div>
                     </div>
                 </div>
             </footer>
+        
         </div>
+
+
     
         <script>
             anychart.onDocumentReady(function() {
