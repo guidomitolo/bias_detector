@@ -8,8 +8,6 @@ from bs4 import BeautifulSoup
 
 from flask import render_template, request, Flask
 
-from textblob import TextBlob
-
 from nltk.tag import StanfordPOSTagger
 
 from collections import defaultdict
