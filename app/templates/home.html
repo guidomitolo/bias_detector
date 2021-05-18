@@ -10,6 +10,8 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css">         
 
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+
 
         <script src="https://cdn.anychart.com/releases/v8/js/anychart-base.min.js"></script>
         <script src="https://cdn.anychart.com/releases/v8/js/anychart-tag-cloud.min.js"></script>
@@ -24,7 +26,7 @@
                     return vars
                 };
 
-            var data = convert( {{wc|tojson}} );
+            var data = convert( {{ wc|tojson }} );
             var bias = convert( {{ bias|tojson }} );
         </script>
     
@@ -53,26 +55,34 @@
 
         <div class="container">
 
-            <h1 class="m-3">Argentina Bias Detector</h1>
+            <div class="row m-3 p-3 bg-white shadow-sm border">
+                <h2>Argentina Bias Detector</h2>
+            </div>
 
             <div class="row m-2">
-                <div class="col m-2 p-3 bg-white shadow-sm border">
-                    <form method="POST">
-                        <h3>Article URL</h3>
-                        <input name="text">
-                        <input class="mt-1" type="submit" value="Detect">
-                    </form>
-                    <small>Compatible News Portals so far:<br>La Nación, El Cronista, Página 12, Derecha Diario</small>
+                <div class="col mx-2">
+                    <div class="row mt-2 p-2 bg-white shadow-sm border">
+                        <form method="POST">
+                            <h3>Article URL</h3>
+                            <input name="text">
+                            <input class="mt-1" type="submit" value="Detect">
+                        </form>
+                        <small>* La Nación, El Cronista, Página 12, Derecha Diario, La Nueva</small>
+                    </div>
+                    <div class="row mt-2 p-2 bg-white shadow-sm border">
+                        <h5>News Portal</h5>
+                        {% if wc %}
+                        <h4>{{ portal}}</h4>
+                        <p>{{ cantidad }} words</p>
+                        {% endif %}
+                    </div>
                 </div>
-                <div class="col m-2 p-3 bg-white shadow-sm border">
-                    <h5>News Portal</h5>
-                    {% if wc %}
-                    <h4>{{ portal}}</h4>
-                    <p>{{ cantidad }} palabras</p>
-                    {% for item in lexicon.items() %}
-                    <p>{{ item[0] }} {{ item[1] }}</p>
-                    {% endfor %}
-                    {% endif %}
+                <div class="col mt-2 mx-2 p-2 bg-white shadow-sm border text-center">
+                    <h5>Leaning</h5>
+                    <h4>{{ label }}</h4>
+                    <div id="canvas-holder" style="width:70%; margin: auto;">
+                        <canvas id="chart"></canvas>
+                    </div>
                 </div>
             </div>
             {% if mensaje %}
@@ -80,34 +90,27 @@
             {{ mensaje }}    
             </div>
             {% else %}
-            <div class="row m-3 p-3 bg-white shadow-sm border">
                 {% if wc %}
-                <div class="col-lg-7 col-sm-12" id="wc"></div>
-                <div class="col-lg-5 col-sm-12 text-center">
-                    <h4>Leaning</h4>
-                    <h3>{{ label }}</h3>
-                    <div id="canvas-holder" style="width:100%">
-                        <canvas id="chart"></canvas>
+                <div class="row m-3 bg-white shadow-sm border">
+                    <div class="col-lg-6 col-sm-12" style="height: 400px;" id="wc"></div>
+                    <div class="col-lg-6 col-sm-12" style="margin: auto;">
+                        <canvas id="myChart"></canvas>
                     </div>
                 </div>
                 {% else %}
                 <div class="col-12 border">Por favor enviar artículo</div>
                 {% endif %}
-            </div>
             {% endif %}
 
-            <footer class="footer m-4 border-top">
-                <div class="container mt-4">
-                    <div class="row text-center">
-                        <div class="col-lg-4 mt-1 text-left">Copyright © Bias Detector - 2021</div>
-                        <div class="col-lg-4 mt-1 text-center">
-                            <a class="m-1" href=""><i class="bi bi-facebook"></i></a>
-                            <a class="m-1" href=""><i class="bi bi-twitter"></i></a>
-                        </div>
-                        <div class="col-lg-4 mt-1 text-right">
-                            <a href="https://github.com/guidomitolo">About</a>
-                        </div>
-                    </div>
+
+            <footer class="row m-3 p-3 bg-white shadow-sm border">
+                <div class="col-lg-4 mt-1 text-center">Copyright © Bias Detector - 2021</div>
+                <div class="col-lg-4 mt-1 text-center">
+                    <a class="m-1" href=""><i class="bi bi-facebook"></i></a>
+                    <a class="m-1" href=""><i class="bi bi-twitter"></i></a>
+                </div>
+                <div class="col-lg-4 mt-1 text-center">
+                    <a href="https://github.com/guidomitolo">About</a>
                 </div>
             </footer>
         
@@ -144,12 +147,12 @@
                 options: {
                     responsive: true,
                     title: {
-                        display: true,
+                        display: false,
                         text: 'Bias'
                     },
                     layout: {
                         padding: {
-                            bottom: 30
+                            bottom: 0
                         }
                     },
                     needle: {
@@ -179,6 +182,35 @@
                 var ctx = document.getElementById('chart').getContext('2d');
                 window.myGauge = new Chart(ctx, config);
             };
+
+            var ctx = document.getElementById('myChart');
+            var myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: {{ tags|tojson }},
+                    datasets: [{
+                        label: 'Identified Term Type',
+                        data: {{ nums|tojson }},
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
 
         </script>
     </body>

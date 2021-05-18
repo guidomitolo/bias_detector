@@ -10,6 +10,14 @@ from flask import render_template, request, Flask
 
 from textblob import TextBlob
 
+from nltk.tag import StanfordPOSTagger
+
+from collections import defaultdict
+
+jar = 'stanford_tagger/stanford-postagger.jar'
+model = 'stanford_tagger/models/spanish-ud.tagger'
+pos_tagger = StanfordPOSTagger(model, jar, encoding='utf8' )
+
 class Config:
     STATIC_FOLDER = 'static'
     TEMPLATES_FOLDER = 'templates'
@@ -39,18 +47,24 @@ def predecir(texto):
 
     text_vectorized = vectorizer.transform([texto])
     bias_prob = classifier.predict_proba(text_vectorized)
+    tags = pos_tagger.tag(vectorizer.get_feature_names())
 
-    lexicon = {}
+    lexicon = defaultdict(int)
+
     data = []
-    for key, value in zip(vectorizer.get_feature_names(), text_vectorized.todense().tolist()[0]):
+
+    for key, value, tag in zip(vectorizer.get_feature_names(), text_vectorized.todense().tolist()[0], tags):
         if value == 0:
             pass
         else:
-            text = TextBlob(str(key))
-            lexicon[str(text.tags[0][1])] =+ 1
-            data.append({"x":key,"value":value, "category":text.tags[0][1]})
+            data.append({"x":key,"value":value, "category": tag[1]})
+            lexicon[tag[1]] += 1
 
-    return data, bias_prob, cantidad, lexicon
+
+    tags = list(lexicon.keys())
+    nums = list(lexicon.values())
+
+    return data, bias_prob, cantidad, tags, nums
 
 @app.route('/', methods=['GET','POST'])
 def index():
@@ -61,7 +75,9 @@ def index():
     label = None
     aviso = None
     cantidad = None
-    lexicon = None
+
+    tags = None
+    nums = None
 
     if request.method == 'POST':
         if re.match("http", request.form.get('text'), re.IGNORECASE):
@@ -71,26 +87,26 @@ def index():
                 children = articulo.findChildren("p" , recursive=False)
                 for child in children:
                     texto += child.text
-                data, bias, cantidad, lexicon = predecir(texto)
+                data, bias, cantidad, tags, nums = predecir(texto)
                 portal = 'La Nueva Provincia'
             elif re.search("derechadiario", request.form.get('text'), re.IGNORECASE):
                 articulo = parse_response(request.form.get('text')).find('div', {'class':"jsx-2701897770 editor body"}).text
-                data, bias, cantidad, lexicon = predecir(articulo)
+                data, bias, cantidad, tags, nums = predecir(articulo)
                 portal = 'Derecha Diario'
             elif re.search("lanacion", request.form.get('text'), re.IGNORECASE):
                 texto = ""
                 articulo = parse_response(request.form.get('text')).findAll('p', {'class':"com-paragraph"})
                 for parrafo in articulo:
                     texto += parrafo.text
-                data, bias, cantidad, lexicon = predecir(texto)
+                data, bias, cantidad, tags, nums = predecir(texto)
                 portal = 'La Nación'
             elif re.search("cronista", request.form.get('text'), re.IGNORECASE):
                 articulo = parse_response(request.form.get('text')).find('div', {'class':"content vsmcontent"}).text
-                data, bias, cantidad, lexicon = predecir(articulo)
+                data, bias, cantidad, tags, nums = predecir(articulo)
                 portal = 'El Cronista'
             elif re.search("pagina", request.form.get('text'), re.IGNORECASE):
                 articulo = parse_response(request.form.get('text')).find('div', {'class':"article-main-content article-text"}).text
-                data, bias, cantidad, lexicon = predecir(articulo)
+                data, bias, cantidad, tags, nums = predecir(articulo)
                 portal = 'Página 12'
             else:
                 aviso = 'News Portal unidentified'
@@ -116,7 +132,8 @@ def index():
         label=label,
         mensaje = aviso,
         cantidad=cantidad,
-        lexicon = lexicon
+        tags = tags,
+        nums = nums
     )
 
 if __name__ == '__main__':
