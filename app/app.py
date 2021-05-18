@@ -19,7 +19,6 @@ model = 'stanford_tagger/models/spanish-ud.tagger'
 pos_tagger = StanfordPOSTagger(model, jar, encoding='utf8' )
 
 class Config:
-    STATIC_FOLDER = 'static'
     TEMPLATES_FOLDER = 'templates'
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
 
