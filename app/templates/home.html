@@ -67,7 +67,7 @@
                             <input name="text">
                             <input class="mt-1" type="submit" value="Detect">
                         </form>
-                        <small>* La Nación, El Cronista, Página 12, Derecha Diario, La Nueva</small>
+                        <small style="font-size: 10px;">* La Nación, El Cronista, Página 12, Derecha Diario, La Nueva</small>
                     </div>
                     <div class="row mt-2 p-2 bg-white shadow-sm border">
                         <h5>News Portal</h5>
@@ -78,15 +78,19 @@
                     </div>
                 </div>
                 <div class="col mt-2 mx-2 p-2 bg-white shadow-sm border text-center">
+                    {% if wc %}
                     <h5>Leaning</h5>
                     <h4>{{ label }}</h4>
                     <div id="canvas-holder" style="width:70%; margin: auto;">
                         <canvas id="chart"></canvas>
                     </div>
+                    {% else %}
+                    <h4>Please upload article</h4>
+                    {% endif %}
                 </div>
             </div>
             {% if mensaje %}
-            <div class="row alert alert-warning" role="alert">
+            <div class="row alert alert-warning m-3 p-3" role="alert">
             {{ mensaje }}    
             </div>
             {% else %}
@@ -97,8 +101,6 @@
                         <canvas id="myChart"></canvas>
                     </div>
                 </div>
-                {% else %}
-                <div class="col-12 border">Por favor enviar artículo</div>
                 {% endif %}
             {% endif %}
 

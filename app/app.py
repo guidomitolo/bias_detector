@@ -111,7 +111,7 @@ def index():
             else:
                 aviso = 'News Portal unidentified'
 
-            if bias.any():
+            if bias is not None:
                 if bias[0][0] < 0.3:
                     label = "Right"
                 elif bias[0][0] > 0.7:
