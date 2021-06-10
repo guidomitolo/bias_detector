@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  bias_detector:
+    build: .
+    command: gunicorn --bind 0.0.0.0:5000 app:app
+    volumes:
+      - ./templates:/bias_detector/templates/
+    ports:
+      - 5000:5000
