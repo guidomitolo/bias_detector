@@ -4,3 +4,7 @@ __pycache__
 data
 tokens
 connection_test.py
+bin
+lib
+lib64
+share
