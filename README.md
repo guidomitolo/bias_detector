@@ -22,7 +22,17 @@ Charts JS engine provided by AnyChart and Charts.js
 
 #### 5. Deployment
 
-Heroku and Docker
+a. Heroku
+
+Procfile, nltk_data and nltk.txt included. Add heroku/java as buildpack.
+
+b. Docker
+
+Built on ubuntu image with java and python.
+
+```
+docker-compose up --build
+```
 
 
 
